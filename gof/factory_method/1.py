@@ -1,4 +1,8 @@
-class IProduct:
+from abc import ABC, abstractmethod
+
+
+class IProduct(ABC):
+    @abstractmethod
     def release(self):
         pass
 
@@ -13,7 +17,8 @@ class Truck(IProduct):
         print('Truck is released')
 
 
-class IWorkShop:
+class IWorkShop(ABC):
+    @abstractmethod
     def create(self) -> IProduct:
         pass
 

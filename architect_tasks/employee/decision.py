@@ -1,38 +1,95 @@
-from __future__ import annotations
-from abc import ABC, abstractmethod
+from abc import ABC
 
 
-class AbstractEmployee(ABC):
-    @abstractmethod
-    def create_employee(self):
-        pass
+class IEmployee(ABC):
+    # this is a base class for all employees
+    def __init__(self, name: str, email: str):
+        self.__name: str = name
+        self.__email: str = email
 
+    def get_name(self) -> str:
+        return self.__name
 
-class BaseEmployee(AbstractEmployee):
-    def __init__(self, name, email, role, is_company_staff, salary_by_hour):
-        self._name = name
-        self._email = email
-        self._role = role
-        self._is_company_staff = is_company_staff
-        self._salary_by_hour = salary_by_hour
+    def get_email(self) -> str:
+        return self.__email
 
-        self.__available_roles = ["developer", "manager", "accountant"]
-
-        if role not in self.__available_roles:
-            raise ValueError("Role must be one of %s" % self.__available_roles)
+    def set_email(self, email: str) -> str:
+        self.__email = email
 
     def __str__(self):
-        return f"{self._name} ({self._email})"
-
-    def create_employee(self):
-        if self._role == "developer" and self._is_company_staff:
-            return CompanyDeveloperEmployee()
+        return f"{self.__name} ({self.__email})"
 
 
-class CompanyDeveloperEmployee(BaseEmployee):
+class RegularEmployee(Employee):
+    # this is a base class for regular employees (who work full-time on a long-term basis and have a fixed salary)
+    def __init__(self, name, email, salary):
+        super().__init__(name, email)
+        self.salary = salary
 
     def calculate_payment(self):
-        return self._cost
+        return self.salary
+
+
+class RegularDeveloperEmployee(RegularEmployee):
+    # this is a class for regular developers
+    def __init__(self, name, email, salary, programming_language):
+        super().__init__(name, email, salary)
+        self.programming_language = programming_language
+        self.tasks = []     # fifo queue
+
+    def add_task(self, task):
+        self.tasks.append(task)
+        print(f"{self.name} accepted the task: {task}")
+
+    def process_tasks(self):
+        for task in self.tasks:
+            print(f"{self.name} is writing code for task: {task}")
+
+        self.tasks.clear()
+        print(f"{self.name} completed all tasks")
+
+
+class RegularManagerEmployee(RegularEmployee):
+    # this is a class for regular managers
+    def __init__(self, name, email, salary, team_name):
+        super().__init__(name, email, salary)
+        self.team_name = team_name
+        self.developers = []
+        self.team_tasks = []
+
+    def add_task_to_team(self, task):
+        self.team_tasks.append(task)
+        print(f"Task: {task} is added to the team {self.team_name}")
+
+    def add_developer_to_team(self, regular_developer):
+        self.developers.append(regular_developer)
+        print(f"{regular_developer.name} is added to the team {self.team_name}")
+
+    def assign_tasks_to_developers(self):
+        print(f"Team {self.team_name} is working on the following tasks: {self.team_tasks}")
+        for task, developer in zip(self.team_tasks, self.developers):
+            developer.add_task(task)
+
+    def start_sprint(self):
+        print(f"Team {self.team_name} is starting a new sprint")
+        for developer in self.developers:
+            developer.process_tasks()
+
+    def finish_sprint(self):
+        print(f"Team {self.team_name} has finished the sprint")
+        self.team_tasks.clear()
+
+
+# TODO: add support for contractor employees (developers and managers) !!!
+class ContractorEmployee(Employee):
+    # this is a base class for contractor employees (who work part-time on a short-term basis and have an hourly rate)
+    def __init__(self, name, email, hourly_rate):
+        super().__init__(name, email)
+        self.hourly_rate = hourly_rate
+        self.hours_worked = 0
+
+    def calculate_payment(self):
+        return self.hours_worked * self.hourly_rate
 
 
 if __name__ == "__main__":
